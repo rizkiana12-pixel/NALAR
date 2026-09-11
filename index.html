@@ -3,71 +3,151 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IPAS CritiQuest</title>
+  <title>IPAS CritiQuest - Pembelajaran Berbasis Masalah</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
-    body { background-color: #f8fafc; color: #1e293b; display: flex; flex-direction: column; min-height: 100vh; }
-    header { background-color: #4338ca; color: white; padding: 1rem; display: flex; justify-content: space-between; align-items: center; }
-    .container { max-width: 1000px; margin: 0 auto; padding: 1.5rem; width: 100%; display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
-    @media (min-width: 768px) { .container { grid-template-columns: 1fr 2fr; } }
-    .card { background: white; padding: 1.25rem; border-radius: 0.75rem; border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-    .btn { background: #4338ca; color: white; border: none; padding: 0.6rem 1rem; border-radius: 0.5rem; font-weight: 600; cursor: pointer; font-size: 0.875rem; }
-    .btn:hover { background: #3730a3; }
-    .btn-mic { background: #059669; }
-    .btn-mic.recording { background: #dc2626; animation: pulse 1.5s infinite; }
-    .btn-clear { background: #e2e8f0; color: #475569; }
-    .case-btn { width: 100%; text-align: left; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 0.5rem; background: white; margin-bottom: 0.5rem; cursor: pointer; }
-    .case-btn.active { border-color: #4338ca; background: #eef2ff; }
-    textarea { width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; font-size: 0.9rem; margin: 1rem 0; resize: vertical; }
-    .flex-between { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: #f8fafc; color: #1e293b; min-height: 100vh; display: flex; flex-direction: column; }
+    
+    /* Header */
+    header { background-color: #4338ca; color: white; padding: 1rem 1.5rem; position: sticky; top: 0; z-index: 50; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .header-container { max-width: 1152px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; width: 100%; }
+    .logo { display: flex; align-items: center; gap: 0.5rem; font-size: 1.25rem; font-weight: bold; }
+    
+    /* Buttons */
+    .btn { background-color: #4f46e5; color: white; border: 1px solid #6366f1; padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.5rem; }
+    .btn:hover { background-color: #4338ca; }
+    .btn-emerald { background-color: #059669; border-color: #10b981; }
+    .btn-emerald:hover { background-color: #047857; }
+    .btn-red { background-color: #dc2626; border-color: #ef4444; }
+    .btn-red:hover { background-color: #b91c1c; }
+    .btn-slate { background-color: #e2e8f0; color: #334155; border-color: #cbd5e1; }
+    .btn-slate:hover { background-color: #cbd5e1; }
+    
+    /* Layout */
+    main { max-width: 1152px; margin: 0 auto; padding: 1.5rem 1rem; flex: 1; width: 100%; display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+    @media (min-width: 768px) { main { grid-template-columns: 1fr 2fr; } }
+    
+    .card { background: white; padding: 1.5rem; border-radius: 0.75rem; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .badge { background-color: #e0e7ff; color: #3730a3; font-size: 0.75rem; font-weight: bold; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase; tracking: 0.05em; display: inline-block; }
+    
+    /* Sidebar Case Buttons */
+    .case-list { display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1rem; }
+    .case-btn { width: 100%; text-align: left; padding: 0.75rem; border-radius: 0.5rem; border: 1px solid #e2e8f0; background: white; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; gap: 0.25rem; }
+    .case-btn:hover { border-color: #6366f1; background-color: #f5f3ff; }
+    .case-btn.active { border-color: #4f46e5; background-color: #eef2ff; }
+    .case-title { font-size: 0.875rem; font-weight: 600; color: #334155; }
+    .case-sub { font-size: 0.75rem; color: #64748b; }
+    
+    /* Textarea & Mic Status */
+    textarea { width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; font-size: 0.875rem; line-height: 1.5; color: #334155; margin: 1rem 0; resize: vertical; }
+    textarea:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 2px #c7d2fe; }
+    .recording-text { font-size: 0.75rem; font-weight: 600; color: #dc2626; display: none; align-items: center; gap: 0.375rem; animation: pulse 1.5s infinite; }
+    
+    /* Modal */
+    .modal-overlay { position: fixed; inset: 0; background-color: rgba(15, 23, 42, 0.5); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; padding: 1rem; z-index: 100; }
+    .modal-content { background: white; width: 100%; max-width: 28rem; border-radius: 1rem; padding: 1.5rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); display: flex; flex-direction: column; gap: 1rem; }
+    
+    .flex-between { display: flex; justify-content: space-between; align-items: center; }
+    .flex-wrap { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; justify-content: space-between; }
+    
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
   </style>
 </head>
 <body>
 
+  <!-- Header -->
   <header>
-    <h2>🧪 IPAS CritiQuest</h2>
-    <button class="btn" onclick="shareApp()">Bagikan Link</button>
-  </header>
-
-  <div class="container">
-    <!-- Sidebar -->
-    <div class="card">
-      <h3 style="margin-bottom: 1rem;">Pilih Studi Kasus</h3>
-      <button class="case-btn active" id="btn-pencemaran" onclick="selectCase('pencemaran')">
-        <strong>1. Pencemaran Sungai</strong><br>
-        <small style="color: #64748b;">Dampak limbah ekosistem air.</small>
-      </button>
-      <button class="case-btn" id="btn-energi" onclick="selectCase('energi')">
-        <strong>2. Krisis Energi Desa</strong><br>
-        <small style="color: #64748b;">Solusi energi terbarukan.</small>
-      </button>
-      <button class="case-btn" id="btn-sampah" onclick="selectCase('sampah')">
-        <strong>3. Pengelolaan Sampah</strong><br>
-        <small style="color: #64748b;">Daur ulang limbah plastik.</small>
+    <div class="header-container">
+      <div class="logo">
+        <span>🧪</span> IPAS CritiQuest
+      </div>
+      <button onclick="toggleShareModal()" class="btn">
+        <span>🔗</span> Bagikan ke Siswa
       </button>
     </div>
+  </header>
 
-    <!-- Main Workspace -->
-    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+  <!-- Main Content -->
+  <main>
+    <!-- Sidebar: Pilih Studi Kasus -->
+    <section class="card">
+      <h2 style="font-size: 1.125rem; font-weight: bold; color: #1e293b; display: flex; align-items: center; gap: 0.5rem;">
+        <span>📖</span> Pilih Studi Kasus
+      </h2>
+      <div class="case-list">
+        <button onclick="selectCase('pencemaran')" id="btn-pencemaran" class="case-btn active">
+          <span class="case-title">1. Pencemaran Sungai</span>
+          <span class="case-sub">Dampak limbah terhadap ekosistem air lokal.</span>
+        </button>
+        <button onclick="selectCase('energi')" id="btn-energi" class="case-btn">
+          <span class="case-title">2. Krisis Energi Desa</span>
+          <span class="case-sub">Solusi energi terbarukan di daerah terpencil.</span>
+        </button>
+        <button onclick="selectCase('sampah')" id="btn-sampah" class="case-btn">
+          <span class="case-title">3. Pengelolaan Sampah</span>
+          <span class="case-sub">Strategi daur ulang limbah plastik sekolah.</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Workspace -->
+    <section style="display: flex; flex-direction: column; gap: 1.5rem;">
+      <!-- Deskripsi Kasus -->
       <div class="card">
-        <span style="background: #e0e7ff; color: #3730a3; padding: 0.2rem 0.6rem; border-radius: 1rem; font-size: 0.75rem; font-weight: bold;">STUDI KASUS</span>
-        <h3 id="case-title" style="margin-top: 0.5rem;">Pencemaran Sungai</h3>
-        <p id="case-desc" style="margin-top: 0.5rem; color: #475569; font-size: 0.95rem; line-height: 1.5;"></p>
+        <span class="badge">Studi Kasus</span>
+        <h3 id="case-title" style="font-size: 1.25rem; font-weight: bold; margin-top: 0.5rem; margin-bottom: 0.75rem; color: #0f172a;">
+          Studi Kasus 1: Pencemaran Sungai Akibat Limbah
+        </h3>
+        <p id="case-desc" style="color: #475569; line-height: 1.6; font-size: 0.875rem;">
+          Sebuah sungai di sekitar wilayah industri mengalami penurunan kualitas air drastis. Air berwarna keruh, berbau menyengat, dan banyak ikan mati. Masyarakat kehilangan sumber air bersih. Sebagai siswa SMK/IPAS, analisis penyebab utama pencemaran ini dan usulkan solusi teknologi ramah lingkungan untuk menyaring air limbah tersebut!
+        </p>
       </div>
 
+      <!-- Lembar Jawaban -->
       <div class="card">
-        <h3>Jawaban & Solusi Siswa</h3>
-        <textarea id="student-answer" rows="6" placeholder="Ketik jawaban di sini atau tekan tombol Dikte Suara (Mic) untuk berbicara..."></textarea>
-        
         <div class="flex-between">
-          <div style="display: flex; gap: 0.5rem;">
-            <button class="btn btn-mic" id="mic-btn" onclick="toggleMic()">🎤 Dikte Suara (Mic)</button>
-            <button class="btn btn-clear" onclick="clearAnswer()">Bersihkan</button>
+          <h3 style="font-size: 1.125rem; font-weight: bold; color: #0f172a; display: flex; align-items: center; gap: 0.5rem;">
+            <span>✏️</span> Solusi & Analisis Siswa
+          </h3>
+          <div id="recording-status" class="recording-text">
+            🔴 Mendengarkan ucapan Anda...
           </div>
-          <button class="btn" onclick="submitAnswer()">Kirim Jawaban</button>
+        </div>
+
+        <textarea id="student-answer" rows="6" placeholder="Ketikkan analisis atau gunakan fitur Dikte Suara (Mic) untuk berbicara..."></textarea>
+
+        <div class="flex-wrap">
+          <div style="display: flex; gap: 0.5rem;">
+            <button onclick="toggleSpeechRecognition()" id="mic-btn" class="btn btn-emerald">
+              🎤 <span id="mic-btn-text">Dikte Suara (Mic)</span>
+            </button>
+            <button onclick="clearAnswer()" class="btn btn-slate">
+              Bersihkan
+            </button>
+          </div>
+          <button onclick="submitAnswer()" class="btn">
+            Kirim Jawaban ➔
+          </button>
         </div>
       </div>
+    </section>
+  </main>
+
+  <!-- Modal Bagikan Link -->
+  <div id="share-modal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="flex-between" style="border-bottom: 1px solid #e2e8f0; padding-bottom: 0.75rem;">
+        <h3 style="font-weight: bold; color: #0f172a; font-size: 1.125rem;">Bagikan Akses Siswa</h3>
+        <button onclick="toggleShareModal()" style="background: none; border: none; font-size: 1.25rem; cursor: pointer; color: #94a3b8;">&times;</button>
+      </div>
+
+      <p style="font-size: 0.875rem; color: #475569;">Salin tautan di bawah ini untuk membagikan kasus yang dipilih langsung ke siswa:</p>
+
+      <div style="display: flex; gap: 0.5rem;">
+        <input type="text" id="share-url-input" readonly style="width: 100%; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 0.5rem; padding: 0.5rem; font-size: 0.75rem; color: #475569;">
+        <button onclick="copyShareUrl()" class="btn" style="white-space: nowrap;">Salin Link</button>
+      </div>
+      <p id="copy-toast" style="font-size: 0.75rem; color: #059669; font-weight: 600; text-align: center; display: none;">Tautan berhasil disalin!</p>
     </div>
   </div>
 
@@ -75,79 +155,88 @@
     const cases = {
       pencemaran: {
         title: "Studi Kasus 1: Pencemaran Sungai Akibat Limbah",
-        desc: "Sebuah sungai di dekat pemukiman keruh dan berbau akibat limbah industri. Banyak ikan mati dan warga kesulitan air bersih. Analisis penyebabnya dan berikan solusi teknologi sederhana untuk menyaring air tersebut!"
+        desc: "Sebuah sungai di sekitar wilayah industri mengalami penurunan kualitas air drastis. Air berwarna keruh, berbau menyengat, dan banyak ikan mati. Masyarakat kehilangan sumber air bersih. Sebagai siswa SMK/IPAS, analisis penyebab utama pencemaran ini dan usulkan solusi teknologi ramah lingkungan untuk menyaring air limbah tersebut!"
       },
       energi: {
-        title: "Studi Kasus 2: Krisis Energi Listrik Desa",
-        desc: "Desa terpencil belum terjangkau listrik, namun memiliki sungai deras dan cahaya matahari melimpah. Rancang rencana pembangkit listrik ramah lingkungan yang cocok untuk desa tersebut!"
+        title: "Studi Kasus 2: Krisis Energi Listrik Desa Pasir",
+        desc: "Desa Pasir berada di wilayah terpencil dan belum terjangkau listrik PLN secara optimal. Namun, wilayah tersebut memiliki arus sungai yang deras dan intensitas cahaya matahari tinggi. Rancang rencana penggunaan energi terbarukan yang paling efisien dan ramah lingkungan untuk desa tersebut!"
       },
       sampah: {
-        title: "Studi Kasus 3: Penumpukan Sampah Plastik",
-        desc: "Kantin sekolah menghasilkan banyak sampah plastik sekali pakai setiap hari. Susun rencana pengelolaan sampah (3R) dan ide produk daur ulang yang bernilai ekonomis!"
+        title: "Studi Kasus 3: Penumpukan Sampah Plastik Kantin",
+        desc: "Setiap hari kantin sekolah menghasilkan puluhan kilogram sampah plastik sekali pakai yang menumpuk tanpa pengolahan lanjutan. Susun strategi pengelolaan sampah terpadu (3R) dan buat ide produk daur ulang bernilai ekonomis yang bisa dijalankan oleh komunitas sekolah!"
       }
     };
 
-    let selectedKey = 'pencemaran';
+    let selectedCaseKey = 'pencemaran';
     let recognition;
     let isRecording = false;
 
     window.onload = function() {
       const urlParams = new URLSearchParams(window.location.search);
       const caseParam = urlParams.get('case');
-      selectCase(caseParam && cases[caseParam] ? caseParam : 'pencemaran');
-      initMic();
+
+      if (caseParam && cases[caseParam]) {
+        selectCase(caseParam);
+      } else {
+        selectCase('pencemaran');
+      }
+
+      initSpeechRecognition();
     };
 
     function selectCase(key) {
-      selectedKey = key;
+      selectedCaseKey = key;
       document.getElementById('case-title').innerText = cases[key].title;
       document.getElementById('case-desc').innerText = cases[key].desc;
-      
+
       document.querySelectorAll('.case-btn').forEach(btn => btn.classList.remove('active'));
       document.getElementById(`btn-${key}`).classList.add('active');
     }
 
-    function initMic() {
+    function initSpeechRecognition() {
       if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         recognition = new SpeechRecognition();
         recognition.continuous = true;
+        recognition.interimResults = false;
         recognition.lang = 'id-ID';
 
-        recognition.onresult = function(e) {
-          const text = e.results[e.results.length - 1][0].transcript;
-          const input = document.getElementById('student-answer');
-          input.value += (input.value ? ' ' : '') + text;
+        recognition.onresult = function(event) {
+          const transcript = event.results[event.results.length - 1][0].transcript;
+          const textarea = document.getElementById('student-answer');
+          textarea.value += (textarea.value ? ' ' : '') + transcript;
         };
 
-        recognition.onerror = function() { stopMic(); };
-        recognition.onend = function() { stopMic(); };
+        recognition.onerror = function() { stopRecording(); };
+        recognition.onend = function() { stopRecording(); };
       } else {
-        const btn = document.getElementById('mic-btn');
-        btn.disabled = true;
-        btn.innerText = "Mic Tidak Didukung";
+        const micBtn = document.getElementById('mic-btn');
+        micBtn.disabled = true;
+        micBtn.style.opacity = '0.5';
+        micBtn.style.cursor = 'not-allowed';
       }
     }
 
-    function toggleMic() {
+    function toggleSpeechRecognition() {
       if (!recognition) return alert("Browser tidak mendukung Dikte Suara.");
+
       if (isRecording) {
         recognition.stop();
-        stopMic();
+        stopRecording();
       } else {
         recognition.start();
         isRecording = true;
-        const btn = document.getElementById('mic-btn');
-        btn.classList.add('recording');
-        btn.innerText = "🛑 Hentikan Rekam";
+        document.getElementById('recording-status').style.display = 'flex';
+        document.getElementById('mic-btn-text').innerText = "Hentikan Dikte";
+        document.getElementById('mic-btn').className = "btn btn-red";
       }
     }
 
-    function stopMic() {
+    function stopRecording() {
       isRecording = false;
-      const btn = document.getElementById('mic-btn');
-      btn.classList.remove('recording');
-      btn.innerText = "🎤 Dikte Suara (Mic)";
+      document.getElementById('recording-status').style.display = 'none';
+      document.getElementById('mic-btn-text').innerText = "Dikte Suara (Mic)";
+      document.getElementById('mic-btn').className = "btn btn-emerald";
     }
 
     function clearAnswer() {
@@ -156,15 +245,33 @@
 
     function submitAnswer() {
       if (!document.getElementById('student-answer').value.trim()) {
-        return alert("Harap isi jawaban terlebih dahulu.");
+        return alert("Silakan masukkan atau uraikan jawaban Anda terlebih dahulu.");
       }
-      alert("Jawaban berhasil dikirim!");
+      alert("Jawaban Anda berhasil disimpan/dikirim!");
     }
 
-    function shareApp() {
-      const url = window.location.href.split('?')[0] + '?case=' + selectedKey;
-      navigator.clipboard.writeText(url);
-      alert("Link berhasil disalin ke clipboard! Bagikan ke siswa via WhatsApp/Classroom:\n\n" + url);
+    function toggleShareModal() {
+      const modal = document.getElementById('share-modal');
+      const isHidden = modal.style.display !== 'flex';
+
+      if (isHidden) {
+        const currentUrl = window.location.href.split('?')[0];
+        document.getElementById('share-url-input').value = `${currentUrl}?case=${selectedCaseKey}`;
+        modal.style.display = 'flex';
+      } else {
+        modal.style.display = 'none';
+        document.getElementById('copy-toast').style.display = 'none';
+      }
+    }
+
+    function copyShareUrl() {
+      const input = document.getElementById('share-url-input');
+      input.select();
+      navigator.clipboard.writeText(input.value);
+
+      const toast = document.getElementById('copy-toast');
+      toast.style.display = 'block';
+      setTimeout(() => toast.style.display = 'none', 2000);
     }
   </script>
 </body>
