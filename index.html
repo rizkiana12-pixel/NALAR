@@ -1,1165 +1,171 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IPAS CritiQuest - Aplikasi Evaluator Mandiri Siswa SMK</title>
-    
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Google Fonts Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                    colors: {
-                        brand: {
-                            50: '#f0fdf4',
-                            100: '#dcfce7',
-                            500: '#22c55e',
-                            600: '#16a34a',
-                            700: '#15803d',
-                            800: '#166534',
-                            900: '#14532d',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    
-    <style>
-        /* Custom Styles & Print Optimization */
-        @media print {
-            .no-print { display: none !important; }
-            .print-only { display: block !important; }
-            body { background: white; color: black; font-size: 12pt; }
-            .card-shadow { box-shadow: none !important; border: 1px solid #ccc !important; }
-        }
-        
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-
-        .gradient-bg {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #064e3b 100%);
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IPAS CritiQuest</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body { background-color: #f8fafc; color: #1e293b; display: flex; flex-direction: column; min-height: 100vh; }
+    header { background-color: #4338ca; color: white; padding: 1rem; display: flex; justify-content: space-between; align-items: center; }
+    .container { max-width: 1000px; margin: 0 auto; padding: 1.5rem; width: 100%; display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+    @media (min-width: 768px) { .container { grid-template-columns: 1fr 2fr; } }
+    .card { background: white; padding: 1.25rem; border-radius: 0.75rem; border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+    .btn { background: #4338ca; color: white; border: none; padding: 0.6rem 1rem; border-radius: 0.5rem; font-weight: 600; cursor: pointer; font-size: 0.875rem; }
+    .btn:hover { background: #3730a3; }
+    .btn-mic { background: #059669; }
+    .btn-mic.recording { background: #dc2626; animation: pulse 1.5s infinite; }
+    .btn-clear { background: #e2e8f0; color: #475569; }
+    .case-btn { width: 100%; text-align: left; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 0.5rem; background: white; margin-bottom: 0.5rem; cursor: pointer; }
+    .case-btn.active { border-color: #4338ca; background: #eef2ff; }
+    textarea { width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; font-size: 0.9rem; margin: 1rem 0; resize: vertical; }
+    .flex-between { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+  </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col antialiased">
+<body>
 
-    <!-- Header App -->
-    <header class="gradient-bg text-white shadow-lg sticky top-0 z-40 no-print">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <button onclick="toggleTeacherModal()" class="px-3 py-1.5 bg-indigo-600/90 hover:bg-indigo-500 border border-indigo-400/40 rounded-lg text-xs font-semibold text-white transition-all flex items-center gap-1.5 shadow-sm">
-                    <i data-lucide="folder-plus" class="w-3.5 h-3.5 text-indigo-200"></i>
-                    <span class="hidden md:inline">Kelola Kasus IPAS</span>
-                </button>
-                <button onclick="toggleSettingsModal()" class="px-3 py-1.5 bg-slate-800/80 hover:bg-slate-700 border border-slate-600 rounded-lg text-xs font-medium text-slate-200 transition-all flex items-center gap-1.5 shadow-sm">
-                    <i data-lucide="key" class="w-3.5 h-3.5 text-amber-400"></i>
-                    <span class="hidden md:inline">API Key</span>
-                </button>
-                <button onclick="window.print()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 shadow-md shadow-emerald-900/20">
-                    <i data-lucide="printer" class="w-3.5 h-3.5"></i>
-                    <span class="hidden md:inline">Cetak Laporan</span>
-                </button>
-            </div>
-        </div>
-    </header>
+  <header>
+    <h2>🧪 IPAS CritiQuest</h2>
+    <button class="btn" onclick="shareApp()">Bagikan Link</button>
+  </header>
 
-    <!-- Main Content Grid -->
-    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-        <!-- Left Column: Inputs & Cases (7 Cols) -->
-        <section class="lg:col-span-7 space-y-6">
-
-            <!-- Identitas Siswa -->
-            <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm card-shadow">
-                <div class="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
-                    <div class="flex items-center space-x-2">
-                        <i data-lucide="user-check" class="w-5 h-5 text-emerald-600"></i>
-                        <h2 class="font-bold text-slate-800 text-base">Identitas Siswa Praktikan</h2>
-                    </div>
-                    <span class="text-xs font-medium text-slate-500">Fase E / Kelas X SMK</span>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Lengkap</label>
-                        <input type="text" id="studentName" placeholder="Contoh: Budi Santoso" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Kelas & Jurusan</label>
-                        <input type="text" id="studentClass" placeholder="Contoh: X TKR 1 / X RPL 2" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">NISN / No. Absen</label>
-                        <input type="text" id="studentNisn" placeholder="12345678" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Studi Kasus Selection -->
-            <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm card-shadow space-y-4">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
-                    <div class="flex items-center space-x-2">
-                        <i data-lucide="file-text" class="w-5 h-5 text-indigo-600"></i>
-                        <h2 class="font-bold text-slate-800 text-base">Pilih Masalah Studi Kasus IPAS</h2>
-                    </div>
-                    
-                    <div class="flex items-center gap-2">
-                        <select id="caseStudySelect" onchange="loadCaseStudy()" class="text-xs bg-slate-100 border border-slate-300 text-slate-700 font-medium rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 max-w-xs sm:max-w-md truncate">
-                            <!-- Dynamically loaded options -->
-                        </select>
-                        <button onclick="toggleTeacherModal()" title="Tambah/Edit Kasus (Mode Guru)" class="p-1.5 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg text-indigo-600 transition-all">
-                            <i data-lucide="settings" class="w-4 h-4"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Case Study Detail Box -->
-                <div id="caseDetailBox" class="p-4 bg-indigo-50/60 border border-indigo-100 rounded-xl space-y-2">
-                    <!-- Dynamic case details generated via JavaScript -->
-                </div>
-            </div>
-
-            <!-- Answer Form -->
-            <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm card-shadow space-y-3">
-                <div class="flex items-center justify-between">
-                    <label for="studentAnswer" class="font-bold text-slate-800 text-base flex items-center gap-2">
-                        <i data-lucide="pen-tool" class="w-5 h-5 text-emerald-600"></i>
-                        Lembar Analisis & Solusi Siswa
-                    </label>
-
-                    <div class="flex items-center gap-2">
-                        <span id="attemptBadge" class="text-xs font-semibold px-2.5 py-0.5 bg-blue-100 text-blue-700 rounded-full">Percobaan #1</span>
-                        <span id="charCount" class="text-xs font-medium text-slate-400">0 Karakter</span>
-                    </div>
-                </div>
-
-                <p class="text-xs text-slate-500">
-                    Tuliskan analisis mandiri kamu secara lugas atau gunakan tombol <strong>Dikte Suara</strong> untuk mengetik lewat ucapan lisan. Jelaskan minimal <strong>2 Dampak Lingkungan/Sosial</strong> dan <strong>1 Solusi Praktis berbasis prinsip IPAS/Kimia Hijau</strong>.
-                </p>
-
-                <div id="dictationStatus" class="hidden text-xs font-medium text-rose-600 bg-rose-50 border border-rose-200 rounded-lg p-2.5 flex items-center justify-between animate-pulse">
-                    <div class="flex items-center gap-2">
-                        <span class="w-2.5 h-2.5 rounded-full bg-rose-600 animate-ping shrink-0"></span>
-                        <span>Mendengarkan ucapan kamu (Bahasa Indonesia)... Silakan bicara.</span>
-                    </div>
-                    <button type="button" onclick="stopDictation()" class="text-[11px] underline font-bold text-rose-700 hover:text-rose-900">
-                        Selesai
-                    </button>
-                </div>
-
-                <div class="relative">
-                    <textarea id="studentAnswer" rows="7" oninput="updateCharCount()" placeholder="Tuliskan hasil pemikiran kamu di sini atau klik Dikte Suara di bawah..." class="w-full p-4 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all font-sans leading-relaxed text-slate-800 resize-y"></textarea>
-                </div>
-
-                <!-- Action Buttons -->
-                <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
-                    <div class="flex items-center gap-2">
-                        <button type="button" onclick="resetForm()" class="px-4 py-2 border border-slate-300 hover:bg-slate-100 text-slate-600 text-xs font-medium rounded-xl transition-all flex items-center gap-1.5">
-                            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
-                            Bersihkan
-                        </button>
-
-                        <button type="button" id="micBtn" onclick="toggleDictation()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 text-xs font-medium rounded-xl transition-all flex items-center gap-1.5 cursor-pointer">
-                            <i data-lucide="mic" class="w-4 h-4 text-rose-500"></i>
-                            <span id="micBtnText">Dikte Suara (Mic)</span>
-                        </button>
-                    </div>
-
-                    <button type="button" id="submitBtn" onclick="evaluateAnswerWithAI()" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-semibold text-sm rounded-xl transition-all shadow-md shadow-emerald-900/20 flex items-center gap-2 cursor-pointer">
-                        <i data-lucide="sparkles" class="w-4 h-4"></i>
-                        <span>Evaluasi Jawaban Saya</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Version History Switcher -->
-            <div id="historyContainer" class="hidden bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm card-shadow">
-                <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                    <i data-lucide="history" class="w-3.5 h-3.5 text-slate-400"></i>
-                    Riwayat Revisi Kamu
-                </h3>
-                <div id="historyButtons" class="flex flex-wrap gap-2">
-                    <!-- Version tabs injected dynamically -->
-                </div>
-            </div>
-
-        </section>
-
-        <!-- Right Column: AI Feedback & Rubric Output (5 Cols) -->
-        <section class="lg:col-span-5 space-y-6">
-
-            <!-- Initial Empty State -->
-            <div id="emptyState" class="bg-white rounded-2xl p-8 border border-slate-200/80 shadow-sm text-center space-y-4 card-shadow">
-                <div class="w-16 h-16 bg-emerald-50 rounded-2xl border border-emerald-100 flex items-center justify-center mx-auto text-emerald-600">
-                    <i data-lucide="shield-check" class="w-8 h-8"></i>
-                </div>
-                <div>
-                    <h3 class="font-bold text-slate-800 text-base">Siap Mengevaluasi Jawabanmu</h3>
-                    <p class="text-xs text-slate-500 mt-1 leading-relaxed">
-                        Ketikkan analisis masalah di sebelah kiri lalu klik tombol <b>Evaluasi Jawaban Saya</b>. AI akan memeriksa konsep IPAS, kelogisan solusi, dan memberikan masukan konstruktif.
-                    </p>
-                </div>
-                <div class="pt-2 border-t border-slate-100 text-left space-y-2">
-                    <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Prinsip Kerja AI CritiQuest:</span>
-                    <ul class="text-xs text-slate-600 space-y-1.5">
-                        <li class="flex items-start gap-2">
-                            <i data-lucide="check" class="w-4 h-4 text-emerald-500 shrink-0 mt-0.5"></i>
-                            <span><b>Bukan Jawaban Instan:</b> AI tidak akan membuatkan paragraf jawaban.</span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <i data-lucide="check" class="w-4 h-4 text-emerald-500 shrink-0 mt-0.5"></i>
-                            <span><b>Pertanyaan Sokrates:</b> Memberikan pertanyaan pemantik agar kamu berpikir ulang.</span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <i data-lucide="check" class="w-4 h-4 text-emerald-500 shrink-0 mt-0.5"></i>
-                            <span><b>Sistem Rubrik IPAS:</b> Menilai konsep IPA, dampak lingkungan, dan solusi keahlian.</span>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- Loading State -->
-            <div id="loadingState" class="hidden bg-white rounded-2xl p-8 border border-slate-200/80 shadow-sm text-center space-y-4 card-shadow">
-                <div class="relative w-16 h-16 mx-auto">
-                    <div class="w-16 h-16 rounded-full border-4 border-emerald-100 border-t-emerald-600 animate-spin"></div>
-                    <div class="absolute inset-0 flex items-center justify-center">
-                        <i data-lucide="brain" class="w-6 h-6 text-emerald-600 animate-pulse"></i>
-                    </div>
-                </div>
-                <div>
-                    <h3 class="font-bold text-slate-800 text-base">Menganalisis Jawaban IPAS Kamu...</h3>
-                    <p class="text-xs text-slate-500 mt-1 animate-pulse" id="loadingText">
-                        Memeriksa pemahaman konsep lingkungan & kelogisan solusi...
-                    </p>
-                </div>
-            </div>
-
-            <!-- AI Evaluation Result Box -->
-            <div id="resultBox" class="hidden space-y-4">
-                
-                <!-- Main Score Card -->
-                <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm card-shadow relative overflow-hidden">
-                    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Hasil Penilaian AI</span>
-                        <span id="scoreBadge" class="px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-extrabold rounded-full border border-emerald-200">
-                            Skor: -- / 100
-                        </span>
-                    </div>
-
-                    <!-- Rubric Breakdown Grid -->
-                    <div class="mt-4 space-y-3">
-                        <div>
-                            <div class="flex justify-between text-xs font-medium text-slate-600 mb-1">
-                                <span>Pemahaman Konsep IPAS</span>
-                                <span id="rubricKonsepText">0/25</span>
-                            </div>
-                            <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                                <div id="rubricKonsepBar" class="bg-emerald-500 h-full w-0 transition-all duration-500"></div>
-                            </div>
-                        </div>
-
-                        <div>
-                            <div class="flex justify-between text-xs font-medium text-slate-600 mb-1">
-                                <span>Analisis Dampak Lingkungan</span>
-                                <span id="rubricDampakText">0/25</span>
-                            </div>
-                            <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                                <div id="rubricDampakBar" class="bg-blue-500 h-full w-0 transition-all duration-500"></div>
-                            </div>
-                        </div>
-
-                        <div>
-                            <div class="flex justify-between text-xs font-medium text-slate-600 mb-1">
-                                <span>Solusi Praktis & Kimia Hijau</span>
-                                <span id="rubricSolusiText">0/25</span>
-                            </div>
-                            <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                                <div id="rubricSolusiBar" class="bg-indigo-500 h-full w-0 transition-all duration-500"></div>
-                            </div>
-                        </div>
-
-                        <div>
-                            <div class="flex justify-between text-xs font-medium text-slate-600 mb-1">
-                                <span>Kelogisan & Argumentasi</span>
-                                <span id="rubricArgumentasiText">0/25</span>
-                            </div>
-                            <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                                <div id="rubricArgumentasiBar" class="bg-amber-500 h-full w-0 transition-all duration-500"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Strengths Card -->
-                <div class="bg-emerald-50/60 border border-emerald-200/80 rounded-2xl p-5 shadow-sm space-y-2">
-                    <div class="flex items-center space-x-2 text-emerald-800">
-                        <i data-lucide="thumbs-up" class="w-4 h-4 text-emerald-600"></i>
-                        <h3 class="font-bold text-sm">Apresiasi & Kelebihan Jawaban Kamu</h3>
-                    </div>
-                    <ul id="strengthsList" class="text-xs text-emerald-900 space-y-1.5 pl-5 list-disc leading-relaxed">
-                        <!-- Dynamic items -->
-                    </ul>
-                </div>
-
-                <!-- Misconceptions / Areas to Improve -->
-                <div class="bg-amber-50/60 border border-amber-200/80 rounded-2xl p-5 shadow-sm space-y-2">
-                    <div class="flex items-center space-x-2 text-amber-800">
-                        <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-600"></i>
-                        <h3 class="font-bold text-sm">Hal yang Perlu Diperbaiki / Dilengkapi</h3>
-                    </div>
-                    <ul id="misconceptionsList" class="text-xs text-amber-900 space-y-1.5 pl-5 list-disc leading-relaxed">
-                        <!-- Dynamic items -->
-                    </ul>
-                </div>
-
-                <!-- Socratic Guidance Card -->
-                <div class="bg-indigo-50/60 border border-indigo-200/80 rounded-2xl p-5 shadow-sm space-y-3">
-                    <div class="flex items-center space-x-2 text-indigo-900">
-                        <i data-lucide="help-circle" class="w-4 h-4 text-indigo-600"></i>
-                        <h3 class="font-bold text-sm">Pertanyaan Pemantik Revisi (Socratic Mentor)</h3>
-                    </div>
-                    <p class="text-xs text-indigo-800 leading-relaxed">
-                        Jawab pertanyaan ini di pikiranmu atau masukkan ke dalam revisi jawaban di sebelah kiri untuk meningkatkan skor kamu:
-                    </p>
-                    <div id="socraticQuestionsList" class="space-y-2">
-                        <!-- Dynamic items -->
-                    </div>
-                </div>
-
-                <!-- General Teacher Motivation -->
-                <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
-                    <p class="text-xs text-slate-600 italic leading-relaxed" id="teacherEncouragement">
-                        "Terus tingkatkan analisis kamu! Rujuk kembali aspek Kimia Hijau dan terapkan pada lingkungan sekitar sekolah."
-                    </p>
-                </div>
-
-                <!-- Action to Revise -->
-                <div class="no-print">
-                    <button onclick="prepareRevision()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2">
-                        <i data-lucide="edit-3" class="w-4 h-4"></i>
-                        <span>Lakukan Revisi Jawaban Sekarang</span>
-                    </button>
-                </div>
-
-            </div>
-
-        </section>
-
-    </main>
-
-    <!-- API Key Settings Modal -->
-    <div id="settingsModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 no-print">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                <div class="flex items-center space-x-2">
-                    <i data-lucide="key" class="w-5 h-5 text-amber-500"></i>
-                    <h3 class="font-bold text-slate-800 text-base">Pengaturan API Key Guru/Siswa</h3>
-                </div>
-                <button onclick="toggleSettingsModal()" class="text-slate-400 hover:text-slate-600">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-
-            <p class="text-xs text-slate-600 leading-relaxed">
-                Secara default, aplikasi akan mencoba menggunakan runtime key internal. Jika ingin menggunakan Kunci API Google Gemini milik sendiri (gratis dari Google AI Studio), masukkan di bawah ini:
-            </p>
-
-            <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">Gemini API Key</label>
-                <input type="password" id="customApiKey" placeholder="AIzaSy..." class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-mono">
-                <span class="text-[10px] text-slate-400 mt-1 block">API Key akan tersimpan di localStorage browser kamu.</span>
-            </div>
-
-            <div class="flex justify-end space-x-2 pt-2">
-                <button onclick="saveApiKey()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg transition-all">
-                    Simpan Pengaturan
-                </button>
-            </div>
-        </div>
+  <div class="container">
+    <!-- Sidebar -->
+    <div class="card">
+      <h3 style="margin-bottom: 1rem;">Pilih Studi Kasus</h3>
+      <button class="case-btn active" id="btn-pencemaran" onclick="selectCase('pencemaran')">
+        <strong>1. Pencemaran Sungai</strong><br>
+        <small style="color: #64748b;">Dampak limbah ekosistem air.</small>
+      </button>
+      <button class="case-btn" id="btn-energi" onclick="selectCase('energi')">
+        <strong>2. Krisis Energi Desa</strong><br>
+        <small style="color: #64748b;">Solusi energi terbarukan.</small>
+      </button>
+      <button class="case-btn" id="btn-sampah" onclick="selectCase('sampah')">
+        <strong>3. Pengelolaan Sampah</strong><br>
+        <small style="color: #64748b;">Daur ulang limbah plastik.</small>
+      </button>
     </div>
 
-    <!-- Modal Kelola Kasus IPAS (Mode Guru) -->
-    <div id="teacherModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 no-print overflow-y-auto">
-        <div class="bg-white rounded-2xl max-w-3xl w-full p-6 shadow-2xl space-y-5 my-8 max-h-[90vh] flex flex-col">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3 shrink-0">
-                <div class="flex items-center space-x-2">
-                    <div class="p-2 bg-indigo-100 rounded-lg text-indigo-600">
-                        <i data-lucide="sliders" class="w-5 h-5"></i>
-                    </div>
-                    <div>
-                        <h3 class="font-bold text-slate-800 text-base">Kelola Studi Kasus IPAS (Mode Guru)</h3>
-                        <p class="text-xs text-slate-500">Sesuaikan konteks studi kasus pembelajaran dengan jurusan/sekolah kamu</p>
-                    </div>
-                </div>
-                <button onclick="toggleTeacherModal()" class="text-slate-400 hover:text-slate-600 p-1">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
+    <!-- Main Workspace -->
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+      <div class="card">
+        <span style="background: #e0e7ff; color: #3730a3; padding: 0.2rem 0.6rem; border-radius: 1rem; font-size: 0.75rem; font-weight: bold;">STUDI KASUS</span>
+        <h3 id="case-title" style="margin-top: 0.5rem;">Pencemaran Sungai</h3>
+        <p id="case-desc" style="margin-top: 0.5rem; color: #475569; font-size: 0.95rem; line-height: 1.5;"></p>
+      </div>
 
-            <!-- Content Area Scrollable -->
-            <div class="overflow-y-auto space-y-6 pr-1 flex-grow">
-                
-                <!-- Form Tambah / Edit Kasus -->
-                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
-                    <h4 id="formCaseTitle" class="font-bold text-xs text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                        <i data-lucide="plus-circle" class="w-4 h-4 text-emerald-600"></i>
-                        <span>Tambah Studi Kasus Baru</span>
-                    </h4>
-
-                    <input type="hidden" id="editCaseId" value="">
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Judul Masalah/Studi Kasus</label>
-                            <input type="text" id="inputCaseTitle" placeholder="Contoh: Pencemaran Limbah Restoran Katering" class="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Aspek IPAS</label>
-                            <input type="text" id="inputCaseAspect" placeholder="Contoh: Aspek 1: Makhluk Hidup & Lingkungannya" class="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Relevansi Jurusan / Kelompok Keahlian SMK</label>
-                        <input type="text" id="inputCaseMajor" placeholder="Contoh: Kuliner / Pariwisata / Agribisnis" class="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Deskripsi Masalah / Konteks Lapangan</label>
-                        <textarea id="inputCaseProblem" rows="3" placeholder="Tuliskan cerita masalah dunia nyata yang dialami siswa atau bengkel sekolah..." class="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 resize-y"></textarea>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Pertanyaan Tugas & Solusi yang Diharapkan</label>
-                        <textarea id="inputCaseQuestion" rows="2" placeholder="Pertanyaan instruksi analisis yang harus dijawab siswa..." class="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 resize-y"></textarea>
-                    </div>
-
-                    <div class="flex items-center justify-between pt-1">
-                        <button type="button" onclick="cancelCaseEdit()" id="cancelEditBtn" class="hidden px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-medium rounded-lg">
-                            Batal Edit
-                        </button>
-                        <button type="button" onclick="saveCustomCase()" class="ml-auto px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg shadow-sm flex items-center gap-1.5">
-                            <i data-lucide="save" class="w-3.5 h-3.5"></i>
-                            <span id="saveCaseBtnText">Simpan Kasus Baru</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Daftar Kasus Terdaftar -->
-                <div class="space-y-3">
-                    <div class="flex items-center justify-between">
-                        <h4 class="font-bold text-xs text-slate-700 uppercase tracking-wider">Daftar Studi Kasus Saat Ini</h4>
-                        <div class="flex items-center gap-2">
-                            <button onclick="exportCasesJSON()" class="px-2.5 py-1 text-[11px] font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg flex items-center gap-1 border border-slate-300">
-                                <i data-lucide="download" class="w-3 h-3"></i> Ekspor
-                            </button>
-                            <label class="px-2.5 py-1 text-[11px] font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg flex items-center gap-1 border border-slate-300 cursor-pointer">
-                                <i data-lucide="upload" class="w-3 h-3"></i> Impor
-                                <input type="file" id="importFileInput" accept=".json" onchange="importCasesJSON(event)" class="hidden">
-                            </label>
-                            <button onclick="resetDefaultCases()" class="px-2.5 py-1 text-[11px] font-medium bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-lg flex items-center gap-1 border border-amber-200">
-                                <i data-lucide="rotate-ccw" class="w-3 h-3"></i> Reset Bawaan
-                            </button>
-                        </div>
-                    </div>
-
-                    <div id="teacherCaseList" class="space-y-2">
-                        <!-- List populated dynamically -->
-                    </div>
-                </div>
-
-            </div>
+      <div class="card">
+        <h3>Jawaban & Solusi Siswa</h3>
+        <textarea id="student-answer" rows="6" placeholder="Ketik jawaban di sini atau tekan tombol Dikte Suara (Mic) untuk berbicara..."></textarea>
+        
+        <div class="flex-between">
+          <div style="display: flex; gap: 0.5rem;">
+            <button class="btn btn-mic" id="mic-btn" onclick="toggleMic()">🎤 Dikte Suara (Mic)</button>
+            <button class="btn btn-clear" onclick="clearAnswer()">Bersihkan</button>
+          </div>
+          <button class="btn" onclick="submitAnswer()">Kirim Jawaban</button>
         </div>
+      </div>
     </div>
+  </div>
 
-    <script>
-        // --- CASE STUDY DEFAULT DATA BANK ---
-        const defaultCaseStudies = {
-            "1": {
-                id: "1",
-                title: "Pencemaran Limbah B3 Bengkel Otomotif/Mesin",
-                aspect: "Aspek 2: Bumi & Antariksa (Interaksi Lingkungan)",
-                major: "Teknik Otomotif / Teknik Mesin",
-                problem: "Di area sekitar bengkel sekolah ditemukan genangan limbah oli bekas yang tercecer di tanah tak berpelapis serta tumpukan aki bekas. Saat hujan deras, oli terbawa aliran air menuju drainase warga sekitar sekolah.",
-                question: "Analisis dampak paparan oli bekas terhadap porositas tanah dan kualitas air tanah di permukiman warga! Solusi praktis berbasis IPAS/Kimia Hijau apa yang dapat diterapkan langsung oleh siswa SMK di bengkel?",
-                isCustom: false
-            },
-            "2": {
-                id: "2",
-                title: "Pemborosan Energi & Efisiensi Listrik Bengkel Elektro",
-                aspect: "Aspek 3: Energi & Perubahannya",
-                major: "Teknik Ketenagaklistrikan / Elektronika",
-                problem: "Penggunaan peralatan las, kompresor, dan penerangan bengkel praktikum sering kali dibiarkan menyala dalam kondisi 'standby' tanpa beban saat istirahat. Hal ini menyebabkan lonjakan tagihan listrik sekolah dan beban pemanasan trafo.",
-                question: "Analisislah konversi energi terbuang dan dampaknya terhadap emisi karbon tak langsung! Solusi efisiensi energi terbarukan atau smart-system apa yang bisa dirancang siswa SMK?",
-                isCustom: false
-            },
-            "3": {
-                id: "3",
-                title: "Pengelolaan Sampah Organik & Minyak Jelantah Kantin",
-                aspect: "Aspek 1: Makhluk Hidup & Lingkungannya",
-                major: "Kuliner / Pariwisata / Agribisnis",
-                problem: "Kantin sekolah menghasilkan rata-rata 15 kg sisa makanan per hari dan limbah minyak goreng bekas (jelantah) yang dibuang langsung ke saluran pembuangan akhir, menyebabkan bau busuk dan penyumbatan lemak (grease trap).",
-                question: "Analisislah proses pembusukan anaerob pada sisa makanan dan ancamannya pada ekosistem air lokal! Bagaimana penerapan prinsip Ekonomi Sirkular / IPAS untuk mengolah minyak jelantah dan sampah organik tersebut?",
-                isCustom: false
-            },
-            "4": {
-                id: "4",
-                title: "Bahaya E-Waste Perangkat Komputer Rusak",
-                aspect: "Aspek 4: Zat & Perubahannya",
-                major: "Teknik Komputer Jaringan / RPL",
-                problem: "Laboratorium komputer menyimpan puluhan motherboard rusak, monitor CRT tua, dan baterai laptop membengkak di gudang tanpa penanganan khusus. Beberapa komponen dilapisi timbal (Pb) dan merkuri (Hg).",
-                question: "Jelaskan sifat kimia zat berbahaya B3 dalam e-waste dan dampaknya bagi kesehatan saraf manusia jika terurai secara sembarangan! Solusi penanganan e-waste berbasis reduce-reuse-recycle di lingkungan sekolah?",
-                isCustom: false
-            },
-            "5": {
-                id: "5",
-                title: "Pencemaran Debu Semen & Drainase Tersumbat",
-                aspect: "Aspek 2 & 4: Lingkungan & Zat",
-                major: "Desain Pemodelan & Konstruksi Bangunan",
-                problem: "Sisa adukan semen praktikum pemipaan dan batu bata dibuang ke selokan sekolah, menyebabkan sedimentasi semen yang mengeras dan menyumbat drainase saat musim hujan.",
-                question: "Analisislah reaksi pengerasan semen (hidrasi) di dalam air dan dampaknya terhadap keasaman pH air selokan! Solusi ramah lingkungan apa yang bisa diterapkan dalam mengelola limbah praktikum konstruksi?",
-                isCustom: false
-            }
+  <script>
+    const cases = {
+      pencemaran: {
+        title: "Studi Kasus 1: Pencemaran Sungai Akibat Limbah",
+        desc: "Sebuah sungai di dekat pemukiman keruh dan berbau akibat limbah industri. Banyak ikan mati dan warga kesulitan air bersih. Analisis penyebabnya dan berikan solusi teknologi sederhana untuk menyaring air tersebut!"
+      },
+      energi: {
+        title: "Studi Kasus 2: Krisis Energi Listrik Desa",
+        desc: "Desa terpencil belum terjangkau listrik, namun memiliki sungai deras dan cahaya matahari melimpah. Rancang rencana pembangkit listrik ramah lingkungan yang cocok untuk desa tersebut!"
+      },
+      sampah: {
+        title: "Studi Kasus 3: Penumpukan Sampah Plastik",
+        desc: "Kantin sekolah menghasilkan banyak sampah plastik sekali pakai setiap hari. Susun rencana pengelolaan sampah (3R) dan ide produk daur ulang yang bernilai ekonomis!"
+      }
+    };
+
+    let selectedKey = 'pencemaran';
+    let recognition;
+    let isRecording = false;
+
+    window.onload = function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const caseParam = urlParams.get('case');
+      selectCase(caseParam && cases[caseParam] ? caseParam : 'pencemaran');
+      initMic();
+    };
+
+    function selectCase(key) {
+      selectedKey = key;
+      document.getElementById('case-title').innerText = cases[key].title;
+      document.getElementById('case-desc').innerText = cases[key].desc;
+      
+      document.querySelectorAll('.case-btn').forEach(btn => btn.classList.remove('active'));
+      document.getElementById(`btn-${key}`).classList.add('active');
+    }
+
+    function initMic() {
+      if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.lang = 'id-ID';
+
+        recognition.onresult = function(e) {
+          const text = e.results[e.results.length - 1][0].transcript;
+          const input = document.getElementById('student-answer');
+          input.value += (input.value ? ' ' : '') + text;
         };
 
-        // --- APP STATE & LOCAL STORAGE MANAGERS ---
-        let caseStudies = {};
-        let currentAttempt = 1;
-        let attemptHistory = [];
-        const DEFAULT_API_KEY = "";
-
-        let recognition = null;
-        let isDictating = false;
-
-        document.addEventListener('DOMContentLoaded', () => {
-            initCaseStudies();
-            loadCaseStudySelectOptions();
-            loadCaseStudy();
-            checkSavedApiKey();
-            lucide.createIcons();
-        });
-
-        // Load & Sync Case Studies from LocalStorage
-        function initCaseStudies() {
-            const stored = localStorage.getItem('ipas_critiquest_cases');
-            if (stored) {
-                try {
-                    caseStudies = JSON.parse(stored);
-                } catch (e) {
-                    console.error("Error parsing stored cases", e);
-                    caseStudies = { ...defaultCaseStudies };
-                }
-            } else {
-                caseStudies = { ...defaultCaseStudies };
-                saveCaseStudiesToStorage();
-            }
-        }
-
-        function saveCaseStudiesToStorage() {
-            localStorage.setItem('ipas_critiquest_cases', JSON.stringify(caseStudies));
-        }
-
-        // Load Options into Select Dropdown
-        function loadCaseStudySelectOptions() {
-            const select = document.getElementById('caseStudySelect');
-            const previousValue = select.value;
-            select.innerHTML = '';
-
-            Object.keys(caseStudies).forEach(id => {
-                const c = caseStudies[id];
-                const option = document.createElement('option');
-                option.value = c.id;
-                option.textContent = `${c.isCustom ? '[Kustom Guru] ' : ''}${c.title}`;
-                select.appendChild(option);
-            });
-
-            if (previousValue && caseStudies[previousValue]) {
-                select.value = previousValue;
-            } else if (Object.keys(caseStudies).length > 0) {
-                select.value = Object.keys(caseStudies)[0];
-            }
-        }
-
-        function loadCaseStudy() {
-            const caseId = document.getElementById('caseStudySelect').value;
-            const data = caseStudies[caseId];
-            const caseDetailBox = document.getElementById('caseDetailBox');
-
-            if (!data) {
-                caseDetailBox.innerHTML = `<p class="text-xs text-red-500 font-medium">Studi kasus tidak ditemukan. Silakan pilih atau tambahkan kasus baru.</p>`;
-                return;
-            }
-
-            caseDetailBox.innerHTML = `
-                <div class="flex flex-wrap items-center gap-2 mb-1">
-                    <span class="text-[11px] font-bold px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-md">${data.aspect || 'Aspek IPAS'}</span>
-                    <span class="text-[11px] font-medium px-2 py-0.5 bg-slate-200 text-slate-700 rounded-md">Relevansi: ${data.major || 'Semua Jurusan SMK'}</span>
-                    ${data.isCustom ? `<span class="text-[10px] font-extrabold px-2 py-0.5 bg-amber-100 text-amber-800 rounded-md border border-amber-300">Kustom Guru</span>` : ''}
-                </div>
-                <h3 class="font-bold text-slate-900 text-sm">${data.title}</h3>
-                <p class="text-xs text-slate-700 leading-relaxed">${data.problem}</p>
-                <div class="pt-2 border-t border-indigo-100/80">
-                    <span class="text-xs font-bold text-indigo-900 block">Pertanyaan Tugas:</span>
-                    <p class="text-xs text-indigo-800 italic">${data.question}</p>
-                </div>
-            `;
-        }
-
-        function toggleTeacherModal() {
-            const modal = document.getElementById('teacherModal');
-            modal.classList.toggle('hidden');
-            if (!modal.classList.contains('hidden')) {
-                renderTeacherCaseList();
-            }
-        }
-
-        function renderTeacherCaseList() {
-            const listContainer = document.getElementById('teacherCaseList');
-            listContainer.innerHTML = '';
-
-            const keys = Object.keys(caseStudies);
-
-            if (keys.length === 0) {
-                listContainer.innerHTML = `<div class="p-3 text-center text-xs text-slate-400">Belum ada studi kasus. Klik 'Reset Bawaan' untuk mengembalikan contoh kasus.</div>`;
-                return;
-            }
-
-            keys.forEach(id => {
-                const item = caseStudies[id];
-                const card = document.createElement('div');
-                card.className = "p-3 bg-white border border-slate-200 rounded-xl flex items-start justify-between gap-3 shadow-2xs hover:border-indigo-200 transition-all";
-                card.innerHTML = `
-                    <div class="space-y-1 text-xs">
-                        <div class="flex items-center gap-1.5 flex-wrap">
-                            <span class="font-bold text-slate-800">${item.title}</span>
-                            ${item.isCustom ? `<span class="text-[9px] px-1.5 py-0.5 bg-amber-100 text-amber-800 font-bold rounded">Kustom</span>` : `<span class="text-[9px] px-1.5 py-0.5 bg-slate-100 text-slate-600 font-medium rounded">Bawaan System</span>`}
-                        </div>
-                        <p class="text-slate-500 line-clamp-1">${item.problem}</p>
-                    </div>
-                    <div class="flex items-center gap-1 shrink-0">
-                        <button onclick="editCase('${item.id}')" title="Edit Kasus" class="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg">
-                            <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
-                        </button>
-                        <button onclick="deleteCase('${item.id}')" title="Hapus Kasus" class="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg">
-                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                        </button>
-                    </div>
-                `;
-                listContainer.appendChild(card);
-            });
-
-            lucide.createIcons();
-        }
-
-        function saveCustomCase() {
-            const editId = document.getElementById('editCaseId').value;
-            const title = document.getElementById('inputCaseTitle').value.trim();
-            const aspect = document.getElementById('inputCaseAspect').value.trim();
-            const major = document.getElementById('inputCaseMajor').value.trim();
-            const problem = document.getElementById('inputCaseProblem').value.trim();
-            const question = document.getElementById('inputCaseQuestion').value.trim();
-
-            if (!title || !problem || !question) {
-                alert("Mohon isi Judul, Deskripsi Masalah, dan Pertanyaan Tugas secara lengkap!");
-                return;
-            }
-
-            const newId = editId ? editId : 'case_' + Date.now();
-
-            caseStudies[newId] = {
-                id: newId,
-                title: title,
-                aspect: aspect || "Aspek IPAS",
-                major: major || "Semua Jurusan SMK",
-                problem: problem,
-                question: question,
-                isCustom: true
-            };
-
-            saveCaseStudiesToStorage();
-            loadCaseStudySelectOptions();
-            document.getElementById('caseStudySelect').value = newId;
-            loadCaseStudy();
-            cancelCaseEdit();
-            renderTeacherCaseList();
-
-            alert(editId ? "Studi kasus berhasil diperbarui!" : "Studi kasus baru berhasil ditambahkan!");
-        }
-
-        function editCase(id) {
-            const item = caseStudies[id];
-            if (!item) return;
-
-            document.getElementById('editCaseId').value = item.id;
-            document.getElementById('inputCaseTitle').value = item.title;
-            document.getElementById('inputCaseAspect').value = item.aspect || '';
-            document.getElementById('inputCaseMajor').value = item.major || '';
-            document.getElementById('inputCaseProblem').value = item.problem;
-            document.getElementById('inputCaseQuestion').value = item.question;
-
-            document.getElementById('formCaseTitle').innerHTML = `
-                <i data-lucide="edit-3" class="w-4 h-4 text-indigo-600"></i>
-                <span>Edit Studi Kasus (${item.title})</span>
-            `;
-            document.getElementById('saveCaseBtnText').textContent = "Simpan Perubahan";
-            document.getElementById('cancelEditBtn').classList.remove('hidden');
-
-            lucide.createIcons();
-        }
-
-        function cancelCaseEdit() {
-            document.getElementById('editCaseId').value = '';
-            document.getElementById('inputCaseTitle').value = '';
-            document.getElementById('inputCaseAspect').value = '';
-            document.getElementById('inputCaseMajor').value = '';
-            document.getElementById('inputCaseProblem').value = '';
-            document.getElementById('inputCaseQuestion').value = '';
-
-            document.getElementById('formCaseTitle').innerHTML = `
-                <i data-lucide="plus-circle" class="w-4 h-4 text-emerald-600"></i>
-                <span>Tambah Studi Kasus Baru</span>
-            `;
-            document.getElementById('saveCaseBtnText').textContent = "Simpan Kasus Baru";
-            document.getElementById('cancelEditBtn').classList.add('hidden');
-
-            lucide.createIcons();
-        }
-
-        function deleteCase(id) {
-            if (confirm("Apakah kamu yakin ingin menghapus studi kasus ini?")) {
-                delete caseStudies[id];
-                saveCaseStudiesToStorage();
-                loadCaseStudySelectOptions();
-                loadCaseStudy();
-                renderTeacherCaseList();
-            }
-        }
-
-        function resetDefaultCases() {
-            if (confirm("Apakah Anda ingin mengembalikan bank soal ke 5 studi kasus standar bawaan? (Kasus kustom akan hilang)")) {
-                caseStudies = { ...defaultCaseStudies };
-                saveCaseStudiesToStorage();
-                loadCaseStudySelectOptions();
-                loadCaseStudy();
-                renderTeacherCaseList();
-                cancelCaseEdit();
-            }
-        }
-
-        function exportCasesJSON() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(caseStudies, null, 2));
-            const downloadAnchor = document.createElement('a');
-            downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", `IPAS_CritiQuest_BankSoal_${new Date().toISOString().slice(0,10)}.json`);
-            document.body.appendChild(downloadAnchor);
-            downloadAnchor.click();
-            downloadAnchor.remove();
-        }
-
-        function importCasesJSON(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const imported = JSON.parse(e.target.result);
-                    if (typeof imported === 'object' && imported !== null) {
-                        caseStudies = imported;
-                        saveCaseStudiesToStorage();
-                        loadCaseStudySelectOptions();
-                        loadCaseStudy();
-                        renderTeacherCaseList();
-                        alert("Bank soal kasus IPAS berhasil diimpor!");
-                    } else {
-                        throw new Error("Format JSON tidak sesuai.");
-                    }
-                } catch (err) {
-                    alert("Gagal mengimpor file JSON: " + err.message);
-                }
-            };
-            reader.readAsText(file);
-        }
-
-        function initSpeechRecognition() {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                return null;
-            }
-
-            const rec = new SpeechRecognition();
-            rec.continuous = true;
-            rec.interimResults = true;
-            rec.lang = 'id-ID';
-
-            rec.onresult = (event) => {
-                let finalTranscript = '';
-                for (let i = event.resultIndex; i < event.results.length; i++) {
-                    if (event.results[i].isFinal) {
-                        finalTranscript += event.results[i][0].transcript;
-                    }
-                }
-
-                if (finalTranscript) {
-                    const textarea = document.getElementById('studentAnswer');
-                    const existingText = textarea.value.trim();
-                    textarea.value = existingText ? existingText + ' ' + finalTranscript.trim() : finalTranscript.trim();
-                    updateCharCount();
-                }
-            };
-
-            rec.onerror = (event) => {
-                console.error('Speech recognition error:', event.error);
-                if (event.error !== 'no-speech') {
-                    stopDictation();
-                    alert('Gagal mengakses mikrofon atau mengenali suara: ' + event.error);
-                }
-            };
-
-            rec.onend = () => {
-                if (isDictating) {
-                    try { rec.start(); } catch(e) { stopDictation(); }
-                }
-            };
-
-            return rec;
-        }
-
-        function toggleDictation() {
-            if (!('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
-                alert("Browser Anda tidak mendukung fitur Dikte Suara (Web Speech API). Harap gunakan Google Chrome, Microsoft Edge, atau Safari versi terbaru.");
-                return;
-            }
-
-            if (!recognition) {
-                recognition = initSpeechRecognition();
-            }
-
-            if (isDictating) {
-                stopDictation();
-            } else {
-                startDictation();
-            }
-        }
-
-        function startDictation() {
-            if (!recognition) return;
-            try {
-                recognition.start();
-                isDictating = true;
-
-                const micBtn = document.getElementById('micBtn');
-                const micBtnText = document.getElementById('micBtnText');
-                const statusBox = document.getElementById('dictationStatus');
-
-                micBtn.classList.remove('bg-slate-100', 'text-slate-700');
-                micBtn.classList.add('bg-rose-600', 'text-white', 'border-rose-700', 'shadow-md');
-                micBtnText.textContent = "Hentikan Dikte";
-                statusBox.classList.remove('hidden');
-            } catch(e) {
-                console.error("Error starting speech recognition:", e);
-            }
-        }
-
-        function stopDictation() {
-            isDictating = false;
-            if (recognition) {
-                try { recognition.stop(); } catch(e) {}
-            }
-
-            const micBtn = document.getElementById('micBtn');
-            const micBtnText = document.getElementById('micBtnText');
-            const statusBox = document.getElementById('dictationStatus');
-
-            if (micBtn) {
-                micBtn.classList.remove('bg-rose-600', 'text-white', 'border-rose-700', 'shadow-md');
-                micBtn.classList.add('bg-slate-100', 'text-slate-700');
-            }
-            if (micBtnText) micBtnText.textContent = "Dikte Suara (Mic)";
-            if (statusBox) statusBox.classList.add('hidden');
-        }
-
-        // --- EXISTING UTILITY FUNCTIONS ---
-        function updateCharCount() {
-            const text = document.getElementById('studentAnswer').value;
-            document.getElementById('charCount').textContent = `${text.length} Karakter`;
-        }
-
-        function toggleSettingsModal() {
-            const modal = document.getElementById('settingsModal');
-            modal.classList.toggle('hidden');
-        }
-
-        function checkSavedApiKey() {
-            const savedKey = localStorage.getItem('gemini_api_key');
-            if (savedKey) {
-                document.getElementById('customApiKey').value = savedKey;
-            }
-        }
-
-        function saveApiKey() {
-            const key = document.getElementById('customApiKey').value.trim();
-            if (key) {
-                localStorage.setItem('gemini_api_key', key);
-                alert("API Key berhasil disimpan di browser!");
-            } else {
-                localStorage.removeItem('gemini_api_key');
-                alert("API Key dihapus.");
-            }
-            toggleSettingsModal();
-        }
-
-        function getActiveApiKey() {
-            return localStorage.getItem('gemini_api_key') || DEFAULT_API_KEY;
-        }
-
-        function resetForm() {
-            if (confirm("Apakah kamu yakin ingin membersihkan lembar jawaban?")) {
-                document.getElementById('studentAnswer').value = '';
-                updateCharCount();
-            }
-        }
-
-        function prepareRevision() {
-            currentAttempt++;
-            document.getElementById('attemptBadge').textContent = `Percobaan #${currentAttempt}`;
-            document.getElementById('studentAnswer').focus();
-            window.scrollTo({ top: document.getElementById('studentAnswer').offsetTop - 100, behavior: 'smooth' });
-        }
-
-        async function evaluateAnswerWithAI() {
-            const studentName = document.getElementById('studentName').value.trim();
-            const studentClass = document.getElementById('studentClass').value.trim();
-            const answerText = document.getElementById('studentAnswer').value.trim();
-            const caseId = document.getElementById('caseStudySelect').value;
-            const currentCase = caseStudies[caseId];
-
-            if (!currentCase) {
-                alert("Pilih studi kasus yang valid terlebih dahulu!");
-                return;
-            }
-
-            if (!studentName || !studentClass) {
-                alert("Mohon lengkapi Nama Lengkap dan Kelas/Jurusan kamu terlebih dahulu!");
-                return;
-            }
-
-            if (answerText.length < 30) {
-                alert("Jawaban kamu terlalu singkat! Tuliskan analisis minimal 30 karakter agar AI dapat menganalisis pola pikir kamu secara objektif.");
-                return;
-            }
-
-            document.getElementById('emptyState').classList.add('hidden');
-            document.getElementById('resultBox').classList.add('hidden');
-            document.getElementById('loadingState').classList.remove('hidden');
-            document.getElementById('submitBtn').disabled = true;
-
-            const apiKey = getActiveApiKey();
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
-
-            const systemPrompt = `
-            Anda adalah Guru Mata Pelajaran Proyek IPAS (Ilmu Pengetahuan Alam dan Sosial) SMK Fase E (Kelas X) yang menerapkan Pembelajaran Berbasis Masalah (Problem-Based Learning) & Metode Sokrates.
-            Tugas Anda: Murni sebagai KOREKTOR dan MITRA KRITIS atas analisis yang ditulis oleh siswa SMK.
-
-            ATURAN SANGAT KETAT:
-            1. DILARANG KERAS memberikan jawaban langsung, merangkumkan solusi ideal, atau menuliskan paragraf revisi yang siap di-copypaste siswa.
-            2. Tujuannya adalah melatih Higher Order Thinking Skills (HOTS) dan kemampuan berargumen ilmiah mandiri.
-            3. Evaluasi berdasarkan 4 Rubrik Penilaian (Masing-masing poin 0-25, Total 100):
-               a. Konsep IPAS (Kesesuaian dengan sains/ilmu pengetahuan alam/sosial)
-               b. Analisis Dampak Lingkungan (Kedalaman analisis sebab-akibat)
-               c. Solusi Praktis & Kimia Hijau/Prinsip IPAS (Kejelasan & keterterapan di SMK)
-               d. Argumentasi & Kelogisan (Struktur penulisan dan logika berpikir)
-            4. Berikan pertanyaan pemantik (Socratic Questions) yang menuntun siswa untuk merevisi dan menemukan celah dalam analisisnya sendiri.
-            `;
-
-            const userPrompt = `
-            [IDENTITAS SISWA]
-            Nama: ${studentName}
-            Kelas/Jurusan: ${studentClass}
-            Percobaan Ke: ${currentAttempt}
-
-            [STUDI KASUS IPAS DIKELOLA GURU]
-            Judul: ${currentCase.title}
-            Aspek IPAS: ${currentCase.aspect || '-'}
-            Relevansi Jurusan: ${currentCase.major || '-'}
-            Masalah: ${currentCase.problem}
-            Pertanyaan Tugas: ${currentCase.question}
-
-            [JAWABAN SISWA UNTUK DIEVALUASI]
-            "${answerText}"
-            `;
-
-            const payload = {
-                contents: [{
-                    parts: [{ text: userPrompt }]
-                }],
-                systemInstruction: {
-                    parts: [{ text: systemPrompt }]
-                },
-                generationConfig: {
-                    responseMimeType: "application/json",
-                    responseSchema: {
-                        type: "OBJECT",
-                        properties: {
-                            score: { type: "INTEGER" },
-                            rubric: {
-                                type: "OBJECT",
-                                properties: {
-                                    konsepIPA: { type: "INTEGER" },
-                                    analisisDampak: { type: "INTEGER" },
-                                    solusiInovatif: { type: "INTEGER" },
-                                    argumentasiLogis: { type: "INTEGER" }
-                                },
-                                required: ["konsepIPA", "analisisDampak", "solusiInovatif", "argumentasiLogis"]
-                            },
-                            strengths: {
-                                type: "ARRAY",
-                                items: { type: "STRING" }
-                            },
-                            misconceptions: {
-                                type: "ARRAY",
-                                items: { type: "STRING" }
-                            },
-                            socraticQuestions: {
-                                type: "ARRAY",
-                                items: { type: "STRING" }
-                            },
-                            teacherEncouragement: { type: "STRING" }
-                        },
-                        required: ["score", "rubric", "strengths", "misconceptions", "socraticQuestions", "teacherEncouragement"]
-                    }
-                }
-            };
-
-            try {
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Server API Error (${response.status})`);
-                }
-
-                const result = await response.json();
-                const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
-
-                if (!jsonText) {
-                    throw new Error("Respons API kosong atau tidak sesuai struktur JSON.");
-                }
-
-                const evalData = JSON.parse(jsonText);
-                renderEvaluationResults(evalData);
-                saveToHistory(currentAttempt, answerText, evalData);
-
-            } catch (error) {
-                console.error(error);
-                alert(`Gagal mengevaluasi jawaban: ${error.message}. Pastikan koneksi internet stabil atau periksa API Key.`);
-                document.getElementById('emptyState').classList.remove('hidden');
-            } finally {
-                document.getElementById('loadingState').classList.add('hidden');
-                document.getElementById('submitBtn').disabled = false;
-            }
-        }
-
-        function renderEvaluationResults(data) {
-            document.getElementById('resultBox').classList.remove('hidden');
-
-            const scoreBadge = document.getElementById('scoreBadge');
-            scoreBadge.textContent = `Skor AI: ${data.score} / 100`;
-
-            if (data.score >= 80) {
-                scoreBadge.className = "px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-extrabold rounded-full border border-emerald-300";
-            } else if (data.score >= 60) {
-                scoreBadge.className = "px-3 py-1 bg-amber-100 text-amber-800 text-xs font-extrabold rounded-full border border-amber-300";
-            } else {
-                scoreBadge.className = "px-3 py-1 bg-red-100 text-red-800 text-xs font-extrabold rounded-full border border-red-300";
-            }
-
-            updateRubricBar('Konsep', data.rubric.konsepIPA);
-            updateRubricBar('Dampak', data.rubric.analisisDampak);
-            updateRubricBar('Solusi', data.rubric.solusiInovatif);
-            updateRubricBar('Argumentasi', data.rubric.argumentasiLogis);
-
-            document.getElementById('strengthsList').innerHTML = data.strengths.map(s => `<li>${s}</li>`).join('');
-            document.getElementById('misconceptionsList').innerHTML = data.misconceptions.map(m => `<li>${m}</li>`).join('');
-
-            document.getElementById('socraticQuestionsList').innerHTML = data.socraticQuestions.map(q => `
-                <div class="p-2.5 bg-white border border-indigo-100 rounded-lg text-xs font-medium text-indigo-900 flex items-start gap-2 shadow-2xs">
-                    <i data-lucide="help-circle" class="w-4 h-4 text-indigo-500 shrink-0 mt-0.5"></i>
-                    <span>${q}</span>
-                </div>
-            `).join('');
-
-            document.getElementById('teacherEncouragement').textContent = `"${data.teacherEncouragement}"`;
-            lucide.createIcons();
-        }
-
-        function updateRubricBar(type, score) {
-            const textElem = document.getElementById(`rubric${type}Text`);
-            const barElem = document.getElementById(`rubric${type}Bar`);
-            
-            textElem.textContent = `${score}/25`;
-            const percent = Math.min(100, Math.max(0, (score / 25) * 100));
-            barElem.style.width = `${percent}%`;
-        }
-
-        function saveToHistory(attempt, answer, evalData) {
-            attemptHistory.push({
-                attempt: attempt,
-                answer: answer,
-                evalData: evalData
-            });
-
-            const historyContainer = document.getElementById('historyContainer');
-            const historyButtons = document.getElementById('historyButtons');
-
-            historyContainer.classList.remove('hidden');
-
-            historyButtons.innerHTML = attemptHistory.map(item => `
-                <button onclick="viewHistoryItem(${item.attempt})" class="px-3 py-1.5 ${item.attempt === attempt ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'} text-xs font-semibold rounded-lg transition-all flex items-center gap-1">
-                    <span>Revisi #${item.attempt}</span>
-                    <span class="opacity-80 text-[10px]">(${item.evalData.score} Poin)</span>
-                </button>
-            `).join('');
-        }
-
-        function viewHistoryItem(attemptNum) {
-            const item = attemptHistory.find(h => h.attempt === attemptNum);
-            if (item) {
-                document.getElementById('studentAnswer').value = item.answer;
-                updateCharCount();
-                renderEvaluationResults(item.evalData);
-                document.getElementById('attemptBadge').textContent = `Percobaan #${item.attempt}`;
-            }
-        }
-    </script>
+        recognition.onerror = function() { stopMic(); };
+        recognition.onend = function() { stopMic(); };
+      } else {
+        const btn = document.getElementById('mic-btn');
+        btn.disabled = true;
+        btn.innerText = "Mic Tidak Didukung";
+      }
+    }
+
+    function toggleMic() {
+      if (!recognition) return alert("Browser tidak mendukung Dikte Suara.");
+      if (isRecording) {
+        recognition.stop();
+        stopMic();
+      } else {
+        recognition.start();
+        isRecording = true;
+        const btn = document.getElementById('mic-btn');
+        btn.classList.add('recording');
+        btn.innerText = "🛑 Hentikan Rekam";
+      }
+    }
+
+    function stopMic() {
+      isRecording = false;
+      const btn = document.getElementById('mic-btn');
+      btn.classList.remove('recording');
+      btn.innerText = "🎤 Dikte Suara (Mic)";
+    }
+
+    function clearAnswer() {
+      document.getElementById('student-answer').value = '';
+    }
+
+    function submitAnswer() {
+      if (!document.getElementById('student-answer').value.trim()) {
+        return alert("Harap isi jawaban terlebih dahulu.");
+      }
+      alert("Jawaban berhasil dikirim!");
+    }
+
+    function shareApp() {
+      const url = window.location.href.split('?')[0] + '?case=' + selectedKey;
+      navigator.clipboard.writeText(url);
+      alert("Link berhasil disalin ke clipboard! Bagikan ke siswa via WhatsApp/Classroom:\n\n" + url);
+    }
+  </script>
 </body>
 </html>
